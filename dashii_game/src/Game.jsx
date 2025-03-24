@@ -1,8 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
-import Player from './assets/player.png';
-import Background from './assets/background.jpg'
-import Ground from './assets/ground.png'
+import Player from "./assets/player.png";
+import Background from './assets/background.jpg';
+import Tiles from './assets/dashii_tilesets.png';
+import Ground from './assets/ground.png';
+import tileJson from './dashii_map.json';
 
 const Game = ({ onGameOver }) => {
   const gameRef = useRef(null);
@@ -10,12 +12,12 @@ const Game = ({ onGameOver }) => {
   useEffect(() => {
     const config = {
       type: Phaser.AUTO,
-      width: 800,
-      height: 600,
+      width: 1040,
+      height: 580,
       physics: {
         default: 'arcade',
         arcade: {
-          gravity: { y: 300 },
+          gravity: { y: 500 },
           debug: false,
         },
       },
@@ -37,135 +39,98 @@ const Game = ({ onGameOver }) => {
     let difficulty = 0;
     let wasTouchingDown = false;
     let jumpTween = null;
+    let jumpSpeed = 400;
 
     function preload() {
-      // Load assets here if you want to replace shapes with images later
       this.load.image('player', Player);
       this.load.image('background', Background);
-      this.load.image('ground', Ground);
+      this.load.image('tiles', Tiles);
+      this.load.image('ground_tile', Ground);
+      this.load.tilemapTiledJSON('map', tileJson);
     }
 
     function create() {
-      // Add ground
-      this.add.image(0, 0, 'background').setOrigin(0, 0);
-      const grounds = this.add.rectangle(0, 400, 800, 40, 0x4287f5).setOrigin(0, 0);
-      this.physics.add.existing(grounds, true);
-      this.add.image(0, 400, 'ground').setOrigin(0, 0);
+      const background = this.add.image(0, 0, 'background').setOrigin(0, 0);
+      // set the background to be fixed in one place
+      background.setScrollFactor(0);
+      background.setScale(1.2);
 
+      // Initiallize the map tile
+      const map = this.make.tilemap({ key: 'map'});
 
-      // Add player (red square)    
-      player = this.physics.add.sprite(100, 350, 'player');
+      // ✅ Fix: Use correct tileset names as defined in the JSON
+      const tileset = map.addTilesetImage('dashii_tile', 'tiles');
+      const groundTileset = map.addTilesetImage('ground', 'ground_tile');
+
+      // ✅ Fix: Use correct layer names as in JSON
+      const ground = map.createLayer('ground', [groundTileset, tileset]);
+      const enemies = map.createLayer('enimies', tileset);
+      
+      ground.setCollisionByProperty({ collides: true });
+      enemies.setCollisionByProperty({ collides: true });
+      ground.setPosition(0, -600);
+      // ground.body.setOffset(0, -600);
+      enemies.setPosition(0, -600);
+      // enemies.body.setOffset(0, -600);
+      
+      // ✅ Fix: Enable collision for ground
+      
+
+      player = this.physics.add.sprite(260, 390, 'player');
       player.setDisplaySize(50, 50);
+      player.body.setCollideWorldBounds(true);
+      this.cameras.main.startFollow(player, true, 1, 0);
+      this.cameras.main.setFollowOffset(-this.cameras.main.width / 4, 0);
+      player.setVelocityX(200);
 
-      // Add collider with ground
-      this.physics.add.collider(player, grounds);
+      // ✅ Fix: Use `ground` instead of `grounds` (which was undefined)
+      this.physics.add.collider(player, ground);
+      this.physics.add.collider(player, enemies);
+      this.physics.world.drawDebug = true;
+      this.physics.world.debugGraphic = this.add.graphics();
+      const debugGraphics = this.add.graphics().setAlpha(0.75);
+      this.map.renderDebug(debugGraphics, {
+          tileColor: null,        // Non-colliding tiles (set to null to ignore)
+          collidingTileColor: new Phaser.Display.Color(255, 0, 0, 255), // Red for colliding tiles
+          faceColor: new Phaser.Display.Color(0, 255, 0, 255) // Green for collision edges
+      });
 
-      // Jump input (spacebar)
+      this.physics.add.collider(player, this.groundLayer, () => {
+        console.log("Collision detected!");
+      });
+
       this.input.keyboard.on('keydown-SPACE', () => {
         if (player.body.touching.down) {
-          player.body.setVelocityY(-300); // Jump
-          // Start rotation tween
+          player.body.setVelocityY(-jumpSpeed);
           jumpTween = this.tweens.add({
             targets: player,
             angle: player.angle + 90,
-            duration: 2000, // Matches expected jump time
+            duration: 2000,
             ease: 'Linear',
           });
         }
       });
 
-      // Initialize obstacle groups
-      spikes = this.physics.add.group({ immovable: true });
-      platforms = this.physics.add.group({ immovable: true });
-      hazards = this.physics.add.group({ immovable: true });
-
-      // Initial obstacle spawn
-      spawnObstacles.call(this, 800);
-
-      // Increase difficulty over time
       this.time.addEvent({
-        delay: 10000, // Every 10 seconds
-        callback: increaseDifficulty,
+        delay: 10000,
+        // callback: increaseDifficulty,
         callbackScope: this,
         loop: true,
       });
-
-      // Collision detection
-      this.physics.add.overlap(player, spikes, handleCollision, null, this);
-      this.physics.add.overlap(player, hazards, handleCollision, null, this);
-      this.physics.add.collider(player, platforms);
     }
 
     function update() {
-      // Check for just landed
       if (!wasTouchingDown && player.body.touching.down) {
         if (jumpTween && jumpTween.isPlaying()) {
-          jumpTween.seek(2000); // Complete rotation on landing
+          jumpTween.seek(2000);
         }
       }
-
-      // Update wasTouchingDown
-      wasTouchingDown = player.body.touching.down;
-
-      // Spawn obstacles ahead of the player
-      const spawnX = Math.floor((player.x + 800) / 800) * 800;
-      if (spawnX > lastSpawnX) {
-        spawnObstacles.call(this, spawnX);
-        lastSpawnX = spawnX;
-      }
-    }
-
-    function spawnObstacles(x) {
-      // Randomly choose a pattern
-      const pattern = Phaser.Math.Between(0, 2);
-
-      if (pattern === 0) {
-        // Spike row
-        for (let i = 0; i < 3; i++) {
-          const spike = spikes.create(x + i * 50, 550, null);
-          spike.setDisplaySize(20, 20);
-          spike.setTint(0x66ff66); // Light green spikes
-        }
-      } else if (pattern === 1) {
-        // Moving platform
-        const platformY = Phaser.Math.Between(300, 500);
-        const platform = this.add.rectangle(x + 200, platformY, 100, 20, 0x6666ff); // Blue platform
-        this.physics.add.existing(platform);
-        platform.body.setImmovable(true);
-        platforms.add(platform);
-        this.tweens.add({
-          targets: platform,
-          y: platformY + 100,
-          duration: 2000,
-          ease: 'Sine.easeInOut',
-          repeat: -1,
-          yoyo: true,
-        });
-      } else {
-        // Rotating hazard
-        const hazard = this.add.rectangle(x + 300, 550, 20, 20, 0xff66ff); // Purple hazard
-        this.physics.add.existing(hazard);
-        hazard.body.setImmovable(true);
-        hazards.add(hazard);
-        this.tweens.add({
-          targets: hazard,
-          angle: 360,
-          duration: 1000,
-          repeat: -1,
-        });
-      }
-    }
-
-    function increaseDifficulty() {
-      difficulty += 1;
-      player.body.velocity.x *= 1.1; // Increase speed by 10%
     }
 
     function handleCollision() {
-      onGameOver(); // Trigger game over state
+      onGameOver();
     }
 
-    // Cleanup Phaser instance on unmount
     return () => {
       gameRef.current.destroy(true);
     };
