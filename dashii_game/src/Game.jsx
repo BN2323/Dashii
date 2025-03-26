@@ -15,10 +15,10 @@ const Game = ({ onGameOver }) => {
       width: 1040,
       height: 580,
       physics: {
-        default: 'arcade',
-        arcade: {
-          gravity: { y: 500 },
-          debug: false,
+        default: 'matter', // Switch to Matter.js
+        matter: {
+          gravity: { y: 2.5 }, // Match original gravity
+          debug: false, // Set to true for debugging physics bodies
         },
       },
       scene: {
@@ -32,14 +32,9 @@ const Game = ({ onGameOver }) => {
     gameRef.current = new Phaser.Game(config);
 
     let player;
-    let spikes;
-    let platforms;
-    let hazards;
-    let lastSpawnX = 800;
-    let difficulty = 0;
+    let speed = 8; // Pixels per second
+    let jumpSpeed = 16; // Adjust as needed
     let wasTouchingDown = false;
-    let jumpTween = null;
-    let jumpSpeed = 400;
 
     function preload() {
       this.load.image('player', Player);
@@ -50,81 +45,106 @@ const Game = ({ onGameOver }) => {
     }
 
     function create() {
+      // Background
       const background = this.add.image(0, 0, 'background').setOrigin(0, 0);
-      // set the background to be fixed in one place
       background.setScrollFactor(0);
       background.setScale(1.2);
 
-      // Initiallize the map tile
-      const map = this.make.tilemap({ key: 'map'});
-
-      // ✅ Fix: Use correct tileset names as defined in the JSON
+      // Tilemap
+      const map = this.make.tilemap({ key: 'map' });
       const tileset = map.addTilesetImage('dashii_tile', 'tiles');
       const groundTileset = map.addTilesetImage('ground', 'ground_tile');
+      this.ground = map.createLayer('ground', [groundTileset, tileset], 0, 0);
+      this.enemies = map.createLayer('enemies', tileset, 0, 0);
 
-      // ✅ Fix: Use correct layer names as in JSON
-      const ground = map.createLayer('ground', [groundTileset, tileset]);
-      const enemies = map.createLayer('enimies', tileset);
-      
-      ground.setCollisionByProperty({ collides: true });
-      enemies.setCollisionByProperty({ collides: true });
-      ground.setPosition(0, -600);
-      // ground.body.setOffset(0, -600);
-      enemies.setPosition(0, -600);
-      // enemies.body.setOffset(0, -600);
-      
-      // ✅ Fix: Enable collision for ground
-      
-
-      player = this.physics.add.sprite(260, 390, 'player');
-      player.setDisplaySize(50, 50);
-      player.body.setCollideWorldBounds(true);
-      this.cameras.main.startFollow(player, true, 1, 0);
-      this.cameras.main.setFollowOffset(-this.cameras.main.width / 4, 0);
-      player.setVelocityX(200);
-
-      // ✅ Fix: Use `ground` instead of `grounds` (which was undefined)
-      this.physics.add.collider(player, ground);
-      this.physics.add.collider(player, enemies);
-      this.physics.world.drawDebug = true;
-      this.physics.world.debugGraphic = this.add.graphics();
-      const debugGraphics = this.add.graphics().setAlpha(0.75);
-      this.map.renderDebug(debugGraphics, {
-          tileColor: null,        // Non-colliding tiles (set to null to ignore)
-          collidingTileColor: new Phaser.Display.Color(255, 0, 0, 255), // Red for colliding tiles
-          faceColor: new Phaser.Display.Color(0, 255, 0, 255) // Green for collision edges
+      // Create ground bodies (static)
+      const groundTiles = this.ground.layer.data.flat().filter(tile => tile.properties.collides);
+      groundTiles.forEach(tile => {
+        const x = tile.x * tile.width + tile.width / 2;
+        const y = tile.y * tile.height + tile.height / 2;
+        const body = this.matter.add.rectangle(x, y, tile.width, tile.height, { isStatic: true });
+        body.label = 'ground';
       });
 
-      this.physics.add.collider(player, this.groundLayer, () => {
-        console.log("Collision detected!");
+      // Create enemy bodies (sensors)
+      const enemyTiles = this.enemies.layer.data.flat().filter(tile => tile.properties.collides);
+      enemyTiles.forEach(tile => {
+        const x = tile.x * tile.width + tile.width / 2;
+        const y = tile.y * tile.height + tile.height / 2;
+        const body = this.matter.add.rectangle(x, y, tile.width, tile.height, { isSensor: true, isStatic: true });
+        body.label = 'enemy';
       });
 
+      // Create player
+      player = this.matter.add.sprite(1040 / 4, 424, 'player');
+      player.setDisplaySize(50, 50); // Adjust display size
+      player.setFriction(0); // Prevent slowing due to friction
+      player.isOnGround = false; // Custom flag for ground check
+      // player.setMass(10);
+      player.body.restitution = 0;
+
+      // Camera
+      this.cameras.main.startFollow(player, true, 1, 1);
+      this.cameras.main.setFollowOffset(-this.cameras.main.width / 4, 138);
+
+      // Collision detection for enemies
+      this.matter.world.on('collisionstart', (event) => {
+        event.pairs.forEach(pair => {
+          const { bodyA, bodyB } = pair;
+          if ((bodyA === player.body && bodyB.label === 'enemy') ||
+              (bodyB === player.body && bodyA.label === 'enemy')) {
+            handleCollision();
+            console.log("You're dead!");
+          }
+        });
+      });
+
+      // Jump input
       this.input.keyboard.on('keydown-SPACE', () => {
-        if (player.body.touching.down) {
-          player.body.setVelocityY(-jumpSpeed);
-          jumpTween = this.tweens.add({
-            targets: player,
-            angle: player.angle + 90,
-            duration: 2000,
-            ease: 'Linear',
-          });
+        if (player.isOnGround) {
+          player.setVelocityY(-jumpSpeed); // Jump upward
+          player.setAngularVelocity(Phaser.Math.DegToRad(3.5)); // Spin (optional)
+          console.log("Jumping!");
+          console.log("Player Y Velocity:", player.body.velocity.y); 
+        } else {
+          console.log("Cannot jump, not on ground");
         }
       });
 
+      // Difficulty timer (unimplemented callback)
       this.time.addEvent({
         delay: 10000,
         // callback: increaseDifficulty,
         callbackScope: this,
         loop: true,
       });
+
+
     }
 
     function update() {
-      if (!wasTouchingDown && player.body.touching.down) {
-        if (jumpTween && jumpTween.isPlaying()) {
-          jumpTween.seek(2000);
+      // Check if player is on ground
+      player.isOnGround = false;
+      this.matter.world.engine.pairs.list.forEach(pair => {
+        if (pair.isActive) {
+          const { bodyA, bodyB } = pair;
+          if ((bodyA === player.body && bodyB.label === 'ground') ||
+              (bodyB === player.body && bodyA.label === 'ground')) {
+            player.isOnGround = true;
+          }
         }
+      });
+
+      // Maintain forward movement
+      player.setVelocityX(speed);
+
+
+      // Stop spinning when landing (optional)
+      let isTouchingDown = player.isOnGround;
+      if (!wasTouchingDown && isTouchingDown) {
+        player.setAngularVelocity(0); // Stop rotation
       }
+      wasTouchingDown = isTouchingDown;
     }
 
     function handleCollision() {
