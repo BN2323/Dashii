@@ -18,7 +18,7 @@ const Game = ({ onGameOver }) => {
         default: 'matter', // Switch to Matter.js
         matter: {
           gravity: { y: 2.5 }, // Match original gravity
-          debug: false, // Set to true for debugging physics bodies
+          debug: true, // Set to true for debugging physics bodies
         },
       },
       scene: {
@@ -33,7 +33,8 @@ const Game = ({ onGameOver }) => {
 
     let player;
     let speed = 8; // Pixels per second
-    let jumpSpeed = 16; // Adjust as needed
+    let jumpSpeed = 12; // Adjust as needed
+    let jumpAngle = 4.7;
     let wasTouchingDown = false;
 
     function preload() {
@@ -71,17 +72,27 @@ const Game = ({ onGameOver }) => {
       enemyTiles.forEach(tile => {
         const x = tile.x * tile.width + tile.width / 2;
         const y = tile.y * tile.height + tile.height / 2;
-        const body = this.matter.add.rectangle(x, y, tile.width, tile.height, { isSensor: true, isStatic: true });
+        const body = this.matter.add.polygon(x, y + 15, 3, tile.width / 1.9, { isSensor: true, isStatic: true, angle: Phaser.Math.DegToRad(90)});
         body.label = 'enemy';
+        // body.setAngle(Phaser.Math.DegToRad(45));
       });
 
+      this.matter.world.createDebugGraphic();
+
+
       // Create player
-      player = this.matter.add.sprite(1040 / 4, 424, 'player');
+      player = this.matter.add.sprite(1040 / 4, 424, 'player', null, {
+        friction: 0,        // No friction on surfaces
+        frictionStatic: 0,  // No static friction
+        frictionAir: 0,     // No air resistance
+        restitution: 0,
+      });
       player.setDisplaySize(50, 50); // Adjust display size
       player.setFriction(0); // Prevent slowing due to friction
       player.isOnGround = false; // Custom flag for ground check
       // player.setMass(10);
-      player.body.restitution = 0;
+      // player.body.restitution = 0;
+
 
       // Camera
       this.cameras.main.startFollow(player, true, 1, 1);
@@ -105,7 +116,7 @@ const Game = ({ onGameOver }) => {
       this.input.keyboard.on('keydown-SPACE', () => {
         if (player.isOnGround) {
           player.setVelocityY(-jumpSpeed); // Jump upward
-          player.setAngularVelocity(Phaser.Math.DegToRad(3.5)); // Spin (optional)
+          player.setAngularVelocity(Phaser.Math.DegToRad(jumpAngle)); // Spin (optional)
         } else {
           console.log("Cannot jump, not on ground");
         }
@@ -116,7 +127,7 @@ const Game = ({ onGameOver }) => {
         console.log("Pointer clicked");
         if (player.isOnGround) {
           player.setVelocityY(-jumpSpeed); // Jump upward
-          player.setAngularVelocity(Phaser.Math.DegToRad(3.5)); // Spin (optional)
+          player.setAngularVelocity(Phaser.Math.DegToRad(jumpAngle)); // Spin (optional)
         } else {
           console.log("Cannot jump, not on ground");
         }
@@ -154,8 +165,29 @@ const Game = ({ onGameOver }) => {
       let isTouchingDown = player.isOnGround;
       if (!wasTouchingDown && isTouchingDown) {
         player.setAngularVelocity(0); // Stop rotation
-      }
+        
+        // Normalize the angle to be within 0-360 degrees
+        let normalizedAngle = player.angle % 360;
+        if (normalizedAngle < 0) {
+          normalizedAngle += 360; // Handle negative angles
+        }
+        
+        // Flat angles (0°, 90°, 180°, 270°, 360°)
+        const flatAngles = [0, 90, 180, 270, 360];
+      
+        // Calculate the closest angle
+        let closestAngle = flatAngles.reduce((prev, curr) => {
+          return Math.abs(curr - normalizedAngle) < Math.abs(prev - normalizedAngle) ? curr : prev;
+        });
+      
+        // Set the player's angle to the closest flat angle
+        player.setAngle(closestAngle);
+      
+        console.log(`Normalized Angle: ${normalizedAngle}, Closest Angle: ${closestAngle}`);
+      }      
+    
       wasTouchingDown = isTouchingDown;
+      
     }
 
     function handleCollision() {
