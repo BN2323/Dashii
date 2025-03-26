@@ -1,0 +1,72 @@
+/* styles.css */
+
+/* Loading Page Styles */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #1a1a1a;
+    color: #fff;
+    font-family: Arial, sans-serif;
+  }
+  
+  .loading-title {
+    font-size: 48px;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px #00ffff;
+  }
+  
+  .spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #fff;
+    border-top: 5px solid #00ffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  .loading-text {
+    margin-top: 20px;
+    font-size: 18px;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* Start Menu Styles */
+  .start-menu-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20%;
+    background-color: #1a1a1a;
+    height: 100vh;
+    color: #fff;
+    font-family: Arial, sans-serif;
+  }
+  
+  .start-menu-title {
+    font-size: 40px;
+    text-shadow: 2px 2px 4px #ff00ff;
+    margin-bottom: 30px;
+  }
+  
+  .start-button {
+    font-size: 20px;
+    padding: 10px 20px;
+    background-color: #00ffff;
+    color: #000;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 0 0 10px #00ffff;
+    transition: transform 0.2s;
+  }
+  
+  .start-button:hover {
+    transform: scale(1.1);
+  }
