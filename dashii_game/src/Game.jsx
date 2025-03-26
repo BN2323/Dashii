@@ -100,12 +100,23 @@ const Game = ({ onGameOver }) => {
       });
 
       // Jump input
+
+      // Space key
       this.input.keyboard.on('keydown-SPACE', () => {
         if (player.isOnGround) {
           player.setVelocityY(-jumpSpeed); // Jump upward
           player.setAngularVelocity(Phaser.Math.DegToRad(3.5)); // Spin (optional)
-          console.log("Jumping!");
-          console.log("Player Y Velocity:", player.body.velocity.y); 
+        } else {
+          console.log("Cannot jump, not on ground");
+        }
+      });
+      
+      // Mouth click or touch click
+      this.input.on('pointerdown', () => {
+        console.log("Pointer clicked");
+        if (player.isOnGround) {
+          player.setVelocityY(-jumpSpeed); // Jump upward
+          player.setAngularVelocity(Phaser.Math.DegToRad(3.5)); // Spin (optional)
         } else {
           console.log("Cannot jump, not on ground");
         }
