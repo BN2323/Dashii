@@ -33,8 +33,8 @@ const Game = ({ onGameOver }) => {
 
     let player;
     let speed = 8; // Pixels per second
-    let jumpSpeed = 12; // Adjust as needed
-    let jumpAngle = 4.7;
+    let jumpSpeed = 11.5; // Adjust as needed
+    let jumpAngle = 6;
     let wasTouchingDown = false;
 
     function preload() {
@@ -160,6 +160,7 @@ const Game = ({ onGameOver }) => {
       // Maintain forward movement
       player.setVelocityX(speed);
 
+      
 
       // Stop spinning when landing (optional)
       let isTouchingDown = player.isOnGround;
