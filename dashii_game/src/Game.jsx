@@ -1,10 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
+import GameOver from './GameOver';
 import Player from "./assets/player.png";
 import Background from './assets/background.jpg';
 import Tiles from './assets/dashii_tilesets.png';
 import Ground from './assets/ground.png';
 import tileJson from './dashii_map.json';
+import Jump from './assets/sound fx/Jump.wav';
+import Die from './assets/sound fx/Hit_Hurt.wav';
+import BGMusic from './assets/sound fx/background.mp3';
 
 const Game = ({ onGameOver }) => {
   const gameRef = useRef(null);
@@ -36,6 +40,7 @@ const Game = ({ onGameOver }) => {
     let jumpSpeed = 11.5; // Adjust as needed
     let jumpAngle = 6;
     let wasTouchingDown = false;
+    let dieSound;
 
     function preload() {
       this.load.image('player', Player);
@@ -43,6 +48,9 @@ const Game = ({ onGameOver }) => {
       this.load.image('tiles', Tiles);
       this.load.image('ground_tile', Ground);
       this.load.tilemapTiledJSON('map', tileJson);
+      this.load.audio('jump', Jump);
+      this.load.audio('die', Die);
+      this.load.audio('bgmusic', BGMusic);
     }
 
     function create() {
@@ -50,6 +58,10 @@ const Game = ({ onGameOver }) => {
       const background = this.add.image(0, 0, 'background').setOrigin(0, 0);
       background.setScrollFactor(0);
       background.setScale(1.2);
+
+      // Add sound
+      const jumpSound = this.sound.add('jump');
+      dieSound = this.sound.add('jump');
 
       // Tilemap
       const map = this.make.tilemap({ key: 'map' });
@@ -115,6 +127,7 @@ const Game = ({ onGameOver }) => {
       // Space key
       this.input.keyboard.on('keydown-SPACE', () => {
         if (player.isOnGround) {
+          jumpSound.play();
           player.setVelocityY(-jumpSpeed); // Jump upward
           player.setAngularVelocity(Phaser.Math.DegToRad(jumpAngle)); // Spin (optional)
         } else {
@@ -126,6 +139,7 @@ const Game = ({ onGameOver }) => {
       this.input.on('pointerdown', () => {
         console.log("Pointer clicked");
         if (player.isOnGround) {
+          jumpSound.play();
           player.setVelocityY(-jumpSpeed); // Jump upward
           player.setAngularVelocity(Phaser.Math.DegToRad(jumpAngle)); // Spin (optional)
         } else {
@@ -140,6 +154,11 @@ const Game = ({ onGameOver }) => {
         callbackScope: this,
         loop: true,
       });
+
+
+      const bgmusic = this.sound.add('bgmusic');
+      bgmusic.loop = true;
+      bgmusic.play();
 
 
     }
@@ -200,7 +219,9 @@ const Game = ({ onGameOver }) => {
     };
   }, [onGameOver]);
 
-  return <div id="phaser-game" style={{ width: '800px', height: '600px', margin: '0 auto' }} />;
+  return <div id="phaser-game" style={{ width: '800px', height: '600px', margin: '0 auto', position: 'relative' }}>
+            <GameOver onRestart={() => setGameState('playing')} />
+         </div>;
 };
 
 export default Game;

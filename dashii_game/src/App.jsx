@@ -15,7 +15,7 @@ const LoadingPage = ({ onLoadingComplete }) => {
 
   return (
     <div className="loading-container">
-      <h1 className="loading-title">Geometry Dash</h1>
+      <h1 className="loading-title">Dashii</h1>
       <div className="spinner"></div>
       <p className="loading-text">Loading...</p>
     </div>
@@ -33,8 +33,8 @@ const App = () => {
     <div style={{ textAlign: 'center' }}>
       {gameState === 'loading' && <LoadingPage onLoadingComplete={handleLoadingComplete} />}
       {gameState === 'menu' && <StartMenu onStart={() => setGameState('playing')} />}
-      {gameState === 'playing' && <Game onGameOver={() => setGameState('gameover')} />}
-      {gameState === 'gameover' && <GameOver onRestart={() => setGameState('playing')} />}
+      {gameState === 'playing' && <Game />}
+      {/* {gameState === 'gameover' && <GameOver onRestart={() => setGameState('playing')} />} */}
     </div>
   );
 };
