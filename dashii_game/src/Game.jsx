@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Phaser from 'phaser';
 import GameOver from './GameOver';
 import Player from "./assets/player.png";
@@ -10,8 +10,10 @@ import Jump from './assets/sound fx/Jump.wav';
 import Die from './assets/sound fx/Hit_Hurt.wav';
 import BGMusic from './assets/sound fx/background.mp3';
 
-const Game = ({ onGameOver }) => {
+const Game = () => {
   const gameRef = useRef(null);
+  const sceneRef = useRef(null);
+  const [isGameOver, setIsGameOver] = useState(false);
 
   useEffect(() => {
     const config = {
@@ -54,6 +56,8 @@ const Game = ({ onGameOver }) => {
     }
 
     function create() {
+      sceneRef.current = this;
+      this.isGameOver = false;
       // Background
       const background = this.add.image(0, 0, 'background').setOrigin(0, 0);
       background.setScrollFactor(0);
@@ -61,7 +65,7 @@ const Game = ({ onGameOver }) => {
 
       // Add sound
       const jumpSound = this.sound.add('jump');
-      dieSound = this.sound.add('jump');
+      dieSound = this.sound.add('die');
 
       // Tilemap
       const map = this.make.tilemap({ key: 'map' });
@@ -102,8 +106,6 @@ const Game = ({ onGameOver }) => {
       player.setDisplaySize(50, 50); // Adjust display size
       player.setFriction(0); // Prevent slowing due to friction
       player.isOnGround = false; // Custom flag for ground check
-      // player.setMass(10);
-      // player.body.restitution = 0;
 
 
       // Camera
@@ -123,10 +125,9 @@ const Game = ({ onGameOver }) => {
       });
 
       // Jump input
-
       // Space key
       this.input.keyboard.on('keydown-SPACE', () => {
-        if (player.isOnGround) {
+        if (!this.isGameOver && player.isOnGround) {
           jumpSound.play();
           player.setVelocityY(-jumpSpeed); // Jump upward
           player.setAngularVelocity(Phaser.Math.DegToRad(jumpAngle)); // Spin (optional)
@@ -138,7 +139,7 @@ const Game = ({ onGameOver }) => {
       // Mouth click or touch click
       this.input.on('pointerdown', () => {
         console.log("Pointer clicked");
-        if (player.isOnGround) {
+        if (!this.isGameOver && player.isOnGround) {
           jumpSound.play();
           player.setVelocityY(-jumpSpeed); // Jump upward
           player.setAngularVelocity(Phaser.Math.DegToRad(jumpAngle)); // Spin (optional)
@@ -158,7 +159,7 @@ const Game = ({ onGameOver }) => {
 
       const bgmusic = this.sound.add('bgmusic');
       bgmusic.loop = true;
-      bgmusic.play();
+      // bgmusic.play();
 
 
     }
@@ -211,17 +212,39 @@ const Game = ({ onGameOver }) => {
     }
 
     function handleCollision() {
-      onGameOver();
+      if (isGameOver) return; // Prevent multiple triggers
+      dieSound.play();
+      setIsGameOver(true);
+      this.isGameOver = true;
+      speed = 0;
     }
 
     return () => {
       gameRef.current.destroy(true);
     };
-  }, [onGameOver]);
+  }, []);
 
-  return <div id="phaser-game" style={{ width: '800px', height: '600px', margin: '0 auto', position: 'relative' }}>
-            <GameOver onRestart={() => setGameState('playing')} />
-         </div>;
+  const handleRestart = () => {
+    setIsGameOver(false);
+    sceneRef.current.restart()
+  };
+
+  return  <div style={{ position: 'relative', width: '800px', height: '600px', margin: '0 auto' }}>
+            <div id="phaser-game"></div>
+            {isGameOver && (
+              <GameOver
+                onRestart={handleRestart}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  zIndex: 10,
+                }}
+              />
+            )}
+          </div>
 };
 
 export default Game;
