@@ -20,9 +20,7 @@ const StartMenu = ({ onStart }) => {
       </div>
 
       {/* Play Button */}
-      <button className="play-button" onClick={onStart}>
-        <span className="play-icon">▶</span>
-      </button>
+      <button className="play-button" onClick={onStart}></button>
 
       {/* Navigation Buttons */}
       <div className="nav-buttons">

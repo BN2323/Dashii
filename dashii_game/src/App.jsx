@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import StartMenu from './StartMenu';
 import Game from './Game';
-import GameOver from './GameOver';
 import './styles.css'; // Import the CSS file
 
 // Loading Page Component
@@ -15,9 +14,9 @@ const LoadingPage = ({ onLoadingComplete }) => {
 
   return (
     <div className="loading-container">
-      <h1 className="loading-title">Dashii</h1>
+      <h1 className="loading-title" style={{color: 'white'}}>Dashii</h1>
       <div className="spinner"></div>
-      <p className="loading-text">Loading...</p>
+      <p className="loading-text" style={{color: 'white'}}>Loading...</p>
     </div>
   );
 };

@@ -4,10 +4,35 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
     color: white;
-    padding: 20px;
+    padding: 40px 50px;
     border-radius: 10px;
     text-align: center;
     display: none;
+    
 }
+
+.gameOver h1 {
+    margin-bottom: 20px;
+    font-size: 32px;
+    font-weight: 10px;
+}
+
+.gameOver p {
+    margin-bottom: 16px;
+    font-size: 16px;
+}
+
+.gameOver button {
+    border-radius: 12px;
+    background-color: rgb(85, 220, 244);
+    cursor: pointer;
+}
+
+.gameOver button:hover {
+    border-radius: 12px;
+    background-color: rgb(85, 244, 228);
+}
+

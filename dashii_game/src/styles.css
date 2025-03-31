@@ -19,6 +19,7 @@ body {
   align-items: center;
   justify-content: center;
   height: 100vh;
+  width: 100vw;
   background: linear-gradient(180deg, #3a1a5e 0%, #5e2a8e 100%); /* Purple gradient */
   position: relative;
   overflow: hidden;
@@ -47,7 +48,7 @@ body {
 .title-main {
   font-family: 'Press Start 2P', cursive; /* Pixelated font */
   font-size: 3.5rem;
-  color: #00ff00; /* Neon green */
+  color: #9aff9a; /* Neon green */
   text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00;
   animation: glow 2s ease-in-out infinite;
 }
@@ -84,10 +85,10 @@ body {
 }
 
 .character-cube {
-  width: 40px;
-  height: 40px;
-  background: #ff00ff; /* Neon magenta */
-  border: 4px solid #00ff00; /* Green border */
+  width: 60px;
+  height: 60px;
+  background-image: url(./assets/player.png); /* Neon magenta */
+  background-size: cover;
   box-shadow: 0 0 10px #ff00ff;
   animation: bounce 1s infinite;
 }
@@ -114,21 +115,22 @@ body {
   width: 120px;
   height: 120px;
   background: #ffd700; /* Yellow */
-  border: 6px solid #00ff00; /* Green border */
-  border-radius: 10px;
+  background-image: url(./assets/button.jpg);
+  background-size: cover;
+  border: 1px solid #00ccff; /* Green border */
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 20px #00ff00;
+  box-shadow: 0 0 20px #00ccff;
   cursor: pointer;
   z-index: 2;
   transition: transform 0.2s, box-shadow 0.3s;
-  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); /* Triangle shape */
 }
 
 .play-button:hover {
   transform: scale(1.1);
-  box-shadow: 0 0 30px #00ff00;
+  box-shadow: 0 0 30px #00ff00#00ccff;
 }
 
 .play-button:active {
@@ -152,19 +154,19 @@ body {
   width: 60px;
   height: 60px;
   background: #1a1a3d; /* Dark blue */
-  border: 4px solid #00ff00; /* Green border */
+  border: 4px solid #00ccff; /* Green border */
   border-radius: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 10px #00ff00;
+  box-shadow: 0 0 10px #00ccff;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.3s;
 }
 
 .nav-button:hover {
   transform: scale(1.1);
-  box-shadow: 0 0 20px #00ff00;
+  box-shadow: 0 0 20px #00ccff;
 }
 
 .nav-button:active {
@@ -174,5 +176,5 @@ body {
 .cube-icon,
 .settings-icon {
   font-size: 1.5rem;
-  color: #ffd700; /* Yellow */
+  color: #00ccff; /* Yellow */
 }

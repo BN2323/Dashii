@@ -25,7 +25,7 @@ const Game = () => {
         default: 'matter', // Switch to Matter.js
         matter: {
           gravity: { y: 2.5 }, // Match original gravity
-          debug: true, // Set to true for debugging physics bodies
+          debug: false, // Set to true for debugging physics bodies
         },
       },
       scene: {
@@ -60,6 +60,10 @@ const Game = () => {
       const background = this.add.image(0, 0, 'background').setOrigin(0, 0);
       background.setScrollFactor(0);
       background.setScale(1.2);
+      // BG sound track
+      this.bgMusic = this.sound.add('bgmusic');
+      this.bgMusic.loop = true;
+      this.bgMusic.play();
 
       // Add sound
       const jumpSound = this.sound.add('jump');
@@ -153,13 +157,6 @@ const Game = () => {
         callbackScope: this,
         loop: true,
       });
-
-
-      const bgmusic = this.sound.add('bgmusic');
-      bgmusic.loop = true;
-      // bgmusic.play();
-
-
     }
 
     function update() {
@@ -212,6 +209,14 @@ const Game = () => {
     function handleCollision() {
       if (sceneRef.current.isGameOver) return; // Prevent multiple triggers
       sceneRef.current.dieSound.play();
+      sceneRef.current.tweens.add({
+        targets: sceneRef.current.bgMusic,
+        volume: 0,
+        duration: 800,
+        onComplete: () => {
+          sceneRef.current.bgMusic.stop(); // Stop the music completely after fading out
+        }
+      });
       setgoDisplayStat('block');
       sceneRef.current.isGameOver = true;
       sceneRef.current.speed = 0;
