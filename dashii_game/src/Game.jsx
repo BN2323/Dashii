@@ -13,7 +13,8 @@ import BGMusic from './assets/sound fx/background.mp3';
 const Game = () => {
   const gameRef = useRef(null);
   const sceneRef = useRef(null);
-  const [isGameOver, setIsGameOver] = useState(false);
+  const [goDisplayStat, setgoDisplayStat] = useState('none');
+  const [attemp, setAttemp] = useState(0);
 
   useEffect(() => {
     const config = {
@@ -37,13 +38,6 @@ const Game = () => {
 
     gameRef.current = new Phaser.Game(config);
 
-    let player;
-    let speed = 8; // Pixels per second
-    let jumpSpeed = 11.5; // Adjust as needed
-    let jumpAngle = 6;
-    let wasTouchingDown = false;
-    let dieSound;
-
     function preload() {
       this.load.image('player', Player);
       this.load.image('background', Background);
@@ -58,6 +52,10 @@ const Game = () => {
     function create() {
       sceneRef.current = this;
       this.isGameOver = false;
+      this.speed = 8; // Pixels per second
+      this.jumpSpeed = 11.5; // Adjust as needed
+      this.jumpAngle = 6;
+      this.wasTouchingDown = false;
       // Background
       const background = this.add.image(0, 0, 'background').setOrigin(0, 0);
       background.setScrollFactor(0);
@@ -65,7 +63,7 @@ const Game = () => {
 
       // Add sound
       const jumpSound = this.sound.add('jump');
-      dieSound = this.sound.add('die');
+      this.dieSound = this.sound.add('die');
 
       // Tilemap
       const map = this.make.tilemap({ key: 'map' });
@@ -97,27 +95,27 @@ const Game = () => {
 
 
       // Create player
-      player = this.matter.add.sprite(1040 / 4, 424, 'player', null, {
+      this.player = this.matter.add.sprite(1040 / 4, 424, 'player', null, {
         friction: 0,        // No friction on surfaces
         frictionStatic: 0,  // No static friction
         frictionAir: 0,     // No air resistance
         restitution: 0,
       });
-      player.setDisplaySize(50, 50); // Adjust display size
-      player.setFriction(0); // Prevent slowing due to friction
-      player.isOnGround = false; // Custom flag for ground check
+      this.player.setDisplaySize(50, 50); // Adjust display size
+      this.player.setFriction(0); // Prevent slowing due to friction
+      this.player.isOnGround = false; // Custom flag for ground check
 
 
       // Camera
-      this.cameras.main.startFollow(player, true, 1, 1);
+      this.cameras.main.startFollow(this.player, true, 1, 1);
       this.cameras.main.setFollowOffset(-this.cameras.main.width / 4, 138);
 
       // Collision detection for enemies
       this.matter.world.on('collisionstart', (event) => {
         event.pairs.forEach(pair => {
           const { bodyA, bodyB } = pair;
-          if ((bodyA === player.body && bodyB.label === 'enemy') ||
-              (bodyB === player.body && bodyA.label === 'enemy')) {
+          if ((bodyA === this.player.body && bodyB.label === 'enemy') ||
+              (bodyB === this.player.body && bodyA.label === 'enemy')) {
             handleCollision();
             console.log("You're dead!");
           }
@@ -126,11 +124,11 @@ const Game = () => {
 
       // Jump input
       // Space key
-      this.input.keyboard.on('keydown-SPACE', () => {
-        if (!this.isGameOver && player.isOnGround) {
+      this.input.keyboard.on('keydown-SPACE', () => { 
+        if (!sceneRef.isGameOver && this.player.isOnGround) {
           jumpSound.play();
-          player.setVelocityY(-jumpSpeed); // Jump upward
-          player.setAngularVelocity(Phaser.Math.DegToRad(jumpAngle)); // Spin (optional)
+          this.player.setVelocityY(-this.jumpSpeed); // Jump upward
+          this.player.setAngularVelocity(Phaser.Math.DegToRad(this.jumpAngle)); // Spin (optional)
         } else {
           console.log("Cannot jump, not on ground");
         }
@@ -139,10 +137,10 @@ const Game = () => {
       // Mouth click or touch click
       this.input.on('pointerdown', () => {
         console.log("Pointer clicked");
-        if (!this.isGameOver && player.isOnGround) {
+        if (!sceneRef.isGameOver && this.player.isOnGround) {
           jumpSound.play();
-          player.setVelocityY(-jumpSpeed); // Jump upward
-          player.setAngularVelocity(Phaser.Math.DegToRad(jumpAngle)); // Spin (optional)
+          this.player.setVelocityY(-this.jumpSpeed); // Jump upward
+          this.player.setAngularVelocity(Phaser.Math.DegToRad(this.jumpAngle)); // Spin (optional)
         } else {
           console.log("Cannot jump, not on ground");
         }
@@ -166,29 +164,29 @@ const Game = () => {
 
     function update() {
       // Check if player is on ground
-      player.isOnGround = false;
+      this.player.isOnGround = false;
       this.matter.world.engine.pairs.list.forEach(pair => {
         if (pair.isActive) {
           const { bodyA, bodyB } = pair;
-          if ((bodyA === player.body && bodyB.label === 'ground') ||
-              (bodyB === player.body && bodyA.label === 'ground')) {
-            player.isOnGround = true;
+          if ((bodyA === this.player.body && bodyB.label === 'ground') ||
+              (bodyB === this.player.body && bodyA.label === 'ground')) {
+                this.player.isOnGround = true;
           }
         }
       });
 
       // Maintain forward movement
-      player.setVelocityX(speed);
+      this.player.setVelocityX(this.speed);
 
       
 
       // Stop spinning when landing (optional)
-      let isTouchingDown = player.isOnGround;
-      if (!wasTouchingDown && isTouchingDown) {
-        player.setAngularVelocity(0); // Stop rotation
+      let isTouchingDown = this.player.isOnGround;
+      if (!this.wasTouchingDown && isTouchingDown) {
+        this.player.setAngularVelocity(0); // Stop rotation
         
         // Normalize the angle to be within 0-360 degrees
-        let normalizedAngle = player.angle % 360;
+        let normalizedAngle = this.player.angle % 360;
         if (normalizedAngle < 0) {
           normalizedAngle += 360; // Handle negative angles
         }
@@ -202,21 +200,24 @@ const Game = () => {
         });
       
         // Set the player's angle to the closest flat angle
-        player.setAngle(closestAngle);
+        this.player.setAngle(closestAngle);
       
         console.log(`Normalized Angle: ${normalizedAngle}, Closest Angle: ${closestAngle}`);
       }      
     
-      wasTouchingDown = isTouchingDown;
+      this.wasTouchingDown = isTouchingDown;
       
     }
 
     function handleCollision() {
-      if (isGameOver) return; // Prevent multiple triggers
-      dieSound.play();
-      setIsGameOver(true);
-      this.isGameOver = true;
-      speed = 0;
+      if (sceneRef.current.isGameOver) return; // Prevent multiple triggers
+      sceneRef.current.dieSound.play();
+      setgoDisplayStat('block');
+      sceneRef.current.isGameOver = true;
+      sceneRef.current.speed = 0;
+      sceneRef.current.jumpSpeed = 0;
+      sceneRef.current.jumpAngle = 0;
+      setAttemp(prevAttemp => prevAttemp +  1);
     }
 
     return () => {
@@ -225,26 +226,18 @@ const Game = () => {
   }, []);
 
   const handleRestart = () => {
-    setIsGameOver(false);
-    sceneRef.current.restart()
+    setgoDisplayStat('none');
+    sceneRef.current.scene.restart()
   };
 
-  return  <div style={{ position: 'relative', width: '800px', height: '600px', margin: '0 auto' }}>
-            <div id="phaser-game"></div>
-            {isGameOver && (
+  return <div id="phaser-game" style={{position: 'relative'}}>
               <GameOver
                 onRestart={handleRestart}
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  zIndex: 10,
-                }}
+                display={goDisplayStat}
+                attemp={attemp}
               />
-            )}
           </div>
+            
 };
 
 export default Game;

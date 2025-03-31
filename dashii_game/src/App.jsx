@@ -33,10 +33,7 @@ const App = () => {
     <div style={{ textAlign: 'center' }}>
       {gameState === 'loading' && <LoadingPage onLoadingComplete={handleLoadingComplete} />}
       {gameState === 'menu' && <StartMenu onStart={() => setGameState('playing')} />}
-      <div style={{ position: 'relative', width: '800px', height: '600px', margin: '0 auto' }}>
-        {gameState === 'playing' && <Game onGameOver={() => setGameState('gameover')} />}
-        {gameState === 'gameover' && <GameOver onRestart={() => setGameState('playing')} />}
-      </div>
+      {gameState === 'playing' && <Game />}
     </div>
   );
 };
