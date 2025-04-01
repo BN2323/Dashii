@@ -1,20 +1,42 @@
 import React, { useEffect, useRef, useState } from 'react';
+
+// Phaser import
 import Phaser from 'phaser';
+// import { use } from 'matter';
+
+// State cards import
+import GamePause from './GamePause';
+import GameVictory from './GameVictory.jsx';
 import GameOver from './GameOver';
+
+// Assets import
+// Image
 import Player from "./assets/player.png";
 import Background from './assets/background.jpg';
 import Tiles from './assets/dashii_tilesets.png';
 import Ground from './assets/ground.png';
-import tileJson from './dashii_map.json';
+//Soundfx
 import Jump from './assets/sound fx/lot.wav';
 import Die from './assets/sound fx/oy.wav';
 import BGMusic from './assets/sound fx/background.mp3';
+
+// Map import
+import tileJson from './dashii_map.json';
+
+// Game props
+import PIcon from './assets/pause_icon.png'
+
+
+
+
+
 
 const Game = () => {
   const gameRef = useRef(null);
   const sceneRef = useRef(null);
   const [goDisplayStat, setgoDisplayStat] = useState('none');
   const [attemp, setAttemp] = useState(0);
+  const [gameCurState, setGameCurState] = useState('');
 
   useEffect(() => {
     const config = {
@@ -214,6 +236,7 @@ const Game = () => {
 
     function handleCollision() {
       if (sceneRef.current.isGameOver) return; // Prevent multiple triggers
+      setGameCurState('over');
       sceneRef.current.dieSound.play();
       sceneRef.current.tweens.add({
         targets: sceneRef.current.bgMusic,
@@ -246,12 +269,25 @@ const Game = () => {
     sceneRef.current.scene.restart()
   };
 
+  const handlePaue = () => {
+    setGameCurState('pause');
+    setgoDisplayStat('block');
+    sceneRef.current.scene.pause()
+    
+  }
+  const handleResume = () => {
+    setgoDisplayStat('none');
+    sceneRef.current.scene.resume();
+  }
+  const handleNextLevel = () => {
+    setgoDisplayStat('block');
+  }
+
   return <div id="phaser-game" style={{position: 'relative'}}>
-              <GameOver
-                onRestart={handleRestart}
-                display={goDisplayStat}
-                attemp={attemp}
-              />
+              <button onClick={handlePaue} style={{ width: '40', height: '40', backgroundSize: 'cover', position: 'absolute', top: '5', left: '5' }}><img src="PIcon" alt="pause_icon" /></button>
+              {gameCurState === 'pause' && <GamePause onRestart={handleRestart} onResume={handleResume} display={goDisplayStat} />}
+              {gameCurState === 'win' && <GameVictory onRestart={handleRestart} onNextLevel={handleNextLevel} display={goDisplayStat} attemp={attemp} />}
+              {gameCurState === 'over' && <GameOver onRestart={handleRestart} display={goDisplayStat} attemp={attemp} />}
           </div>
             
 };

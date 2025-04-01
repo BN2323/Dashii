@@ -23,7 +23,6 @@ const LoadingPage = ({ onLoadingComplete }) => {
 
 const App = () => {
   const [gameState, setGameState] = useState('loading'); // Start with loading state
-
   const handleLoadingComplete = () => {
     setGameState('menu');
   };

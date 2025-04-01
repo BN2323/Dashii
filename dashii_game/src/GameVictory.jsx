@@ -1,7 +1,7 @@
 import React from 'react';
 import './gameOverStyle.css';
 
-const GameWin = ({ onRestart, onNextLevel, display, attemp }) => {
+const GameVictory = ({ onRestart, onNextLevel, display, attemp }) => {
   return (
     <div style={{display: display}} className='gameOver'>
       <h1>You Win!</h1>
@@ -18,4 +18,4 @@ const GameWin = ({ onRestart, onNextLevel, display, attemp }) => {
   );
 };
 
-export default GameOver;
+export default GameVictory;
