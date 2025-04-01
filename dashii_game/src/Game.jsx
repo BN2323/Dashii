@@ -46,7 +46,7 @@ const Game = () => {
       physics: {
         default: 'matter', // Switch to Matter.js
         matter: {
-          gravity: { y: 2.5 }, // Match original gravity
+          gravity: { y: 3 }, // Match original gravity
           debug: false, // Set to true for debugging physics bodies
         },
       },
@@ -75,7 +75,7 @@ const Game = () => {
       sceneRef.current = this;
       this.isGameOver = false;
       this.speed = 8; // Pixels per second
-      this.jumpSpeed = 11.5; // Adjust as needed
+      this.jumpSpeed = 12.5; // Adjust as needed
       this.jumpAngle = 6;
       this.wasTouchingDown = false;
       // Background
@@ -98,6 +98,7 @@ const Game = () => {
       // Tilemap
       const map = this.make.tilemap({ key: 'map' });
       const tileset = map.addTilesetImage('dashii_tile', 'tiles');
+      this.mapWidth = map.width * map.tileWidth; // Total width in pixels
       const groundTileset = map.addTilesetImage('ground', 'ground_tile');
       this.ground = map.createLayer('ground', [groundTileset, tileset], 0, 0);
       this.enemies = map.createLayer('enemies', tileset, 0, 0);
@@ -199,6 +200,14 @@ const Game = () => {
           }
         }
       });
+
+      // Win System
+      console.log(this.player.x);
+      if (this.player.x >= this.mapWidth - 1040 / 4) {
+        console.log('win');
+        setGameCurState('win');
+        setgoDisplayStat('block');
+      }
 
       // Maintain forward movement
       this.player.setVelocityX(this.speed);
