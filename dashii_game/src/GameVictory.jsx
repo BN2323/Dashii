@@ -7,7 +7,7 @@ const GameVictory = ({ onRestart, onNextLevel, display, attemp }) => {
     <div style={{display: display}} className='gameOver'>
       <h1>You Win!</h1>
       <p>Attempt: {attemp}</p>
-      <p>Reward: <img src= {ben10} alt="" /></p>
+      <p className='p'>Reward: <img src= {ben10} alt="" /></p>
       <div className='Win_Button'>
         <button onClick={onRestart} style={{ fontSize: '20px', padding: '10px 20px' }}>
           Restart
