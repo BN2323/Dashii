@@ -92,13 +92,13 @@ const Game = () => {
       this.jumpSound = this.sound.add('jump');
       this.dieSound = this.sound.add('die');
 
-      this.jumpSound.setVolume(2);
+      this.jumpSound.setVolume(1);
       this.dieSound.setVolume(2);
 
       // Tilemap
       const map = this.make.tilemap({ key: 'map' });
       const tileset = map.addTilesetImage('dashii_tile', 'tiles');
-      this.mapWidth = map.width * map.tileWidth; // Total width in pixels
+      this.mapWidth = 64 * (200 - 10); // Total width in pixels
       const groundTileset = map.addTilesetImage('ground', 'ground_tile');
       this.ground = map.createLayer('ground', [groundTileset, tileset], 0, 0);
       this.enemies = map.createLayer('enemies', tileset, 0, 0);
@@ -202,8 +202,9 @@ const Game = () => {
       });
 
       // Win System
-      console.log(this.mapWidth);
-      if (this.player.x >= this.mapWidth) {
+      console.log('Map width: ' + this.mapWidth);
+      console.log('Player: ' + this.player.x);
+      if (this.player.x >= this.mapWidth/2) {
         console.log('win');
         setGameCurState('win');
         setgoDisplayStat('block');
