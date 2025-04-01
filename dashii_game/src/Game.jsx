@@ -43,6 +43,10 @@ const Game = () => {
       type: Phaser.AUTO,
       width: 1040,
       height: 580,
+      scale: {
+        mode: Phaser.Scale.RESIZE,
+        autoCenter: Phaser.Scale.CENTER_BOTH
+      },
       physics: {
         default: 'matter', // Switch to Matter.js
         matter: {
