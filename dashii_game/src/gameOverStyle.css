@@ -36,3 +36,8 @@
     background-color: rgb(85, 244, 228);
 }
 
+.Win_Button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

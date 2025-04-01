@@ -6,8 +6,8 @@ import Background from './assets/background.jpg';
 import Tiles from './assets/dashii_tilesets.png';
 import Ground from './assets/ground.png';
 import tileJson from './dashii_map.json';
-import Jump from './assets/sound fx/Jump.wav';
-import Die from './assets/sound fx/Hit_Hurt.wav';
+import Jump from './assets/sound fx/lot.wav';
+import Die from './assets/sound fx/oy.wav';
 import BGMusic from './assets/sound fx/background.mp3';
 
 const Game = () => {
@@ -63,11 +63,15 @@ const Game = () => {
       // BG sound track
       this.bgMusic = this.sound.add('bgmusic');
       this.bgMusic.loop = true;
+      this.bgMusic.setVolume(0.5);
       this.bgMusic.play();
 
       // Add sound
-      const jumpSound = this.sound.add('jump');
+      this.jumpSound = this.sound.add('jump');
       this.dieSound = this.sound.add('die');
+
+      this.jumpSound.setVolume(2);
+      this.dieSound.setVolume(2);
 
       // Tilemap
       const map = this.make.tilemap({ key: 'map' });
@@ -121,7 +125,7 @@ const Game = () => {
           if ((bodyA === this.player.body && bodyB.label === 'enemy') ||
               (bodyB === this.player.body && bodyA.label === 'enemy')) {
             handleCollision();
-            console.log("You're dead!");
+            console.log(this.player.body.velocity.x);
           }
         });
       });
@@ -129,10 +133,11 @@ const Game = () => {
       // Jump input
       // Space key
       this.input.keyboard.on('keydown-SPACE', () => { 
-        if (!sceneRef.isGameOver && this.player.isOnGround) {
-          jumpSound.play();
+        if (!this.isGameOver && this.player.isOnGround) {
+          this.jumpSound.play();
           this.player.setVelocityY(-this.jumpSpeed); // Jump upward
           this.player.setAngularVelocity(Phaser.Math.DegToRad(this.jumpAngle)); // Spin (optional)
+          console.log('jump!');
         } else {
           console.log("Cannot jump, not on ground");
         }
@@ -141,8 +146,8 @@ const Game = () => {
       // Mouth click or touch click
       this.input.on('pointerdown', () => {
         console.log("Pointer clicked");
-        if (!sceneRef.isGameOver && this.player.isOnGround) {
-          jumpSound.play();
+        if (!this.isGameOver && this.player.isOnGround) {
+          this.jumpSound.play();
           this.player.setVelocityY(-this.jumpSpeed); // Jump upward
           this.player.setAngularVelocity(Phaser.Math.DegToRad(this.jumpAngle)); // Spin (optional)
         } else {
@@ -160,6 +165,7 @@ const Game = () => {
     }
 
     function update() {
+      console.log(this.player.body.velocity.x);
       // Check if player is on ground
       this.player.isOnGround = false;
       this.matter.world.engine.pairs.list.forEach(pair => {
@@ -220,6 +226,7 @@ const Game = () => {
       setgoDisplayStat('block');
       sceneRef.current.isGameOver = true;
       sceneRef.current.speed = 0;
+      sceneRef.current.player.setVelocityX(0);
       sceneRef.current.jumpSpeed = 0;
       sceneRef.current.jumpAngle = 0;
       setAttemp(prevAttemp => prevAttemp +  1);
@@ -231,6 +238,10 @@ const Game = () => {
   }, []);
 
   const handleRestart = () => {
+    // Prevent overlaping bg music
+    sceneRef.current.bgMusic.stop();
+    sceneRef.current.jumpSound.stop();
+    sceneRef.current.dieSound.stop();
     setgoDisplayStat('none');
     sceneRef.current.scene.restart()
   };
