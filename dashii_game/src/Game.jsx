@@ -203,7 +203,7 @@ const Game = () => {
 
       // Win System
       console.log(this.player.x);
-      if (this.player.x >= this.mapWidth - 1040 / 4) {
+      if (this.player.x >= this.mapWidth) {
         console.log('win');
         setGameCurState('win');
         setgoDisplayStat('block');

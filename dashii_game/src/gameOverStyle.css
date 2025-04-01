@@ -7,7 +7,7 @@
     background: rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(8px);
     color: white;
-    padding: 40px 50px;
+    padding: 40px 40px;
     border-radius: 10px;
     text-align: center;
     display: none;
@@ -29,6 +29,7 @@
     border-radius: 12px;
     background-color: rgb(85, 220, 244);
     cursor: pointer;
+    margin: 0 10px;
 }
 
 .gameOver button:hover {
