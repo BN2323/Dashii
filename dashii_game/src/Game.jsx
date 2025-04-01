@@ -78,14 +78,17 @@ const Game = () => {
     function create() {
       sceneRef.current = this;
       this.isGameOver = false;
+
+      // World objects possition
+      this.wObjPos = - 128;
       this.speed = 8; // Pixels per second
       this.jumpSpeed = 12.5; // Adjust as needed
       this.jumpAngle = 6;
       this.wasTouchingDown = false;
       // Background
-      const background = this.add.image(0, 0, 'background').setOrigin(0, 0);
+      const background = this.add.image(this.scale.width / 2, this.scale.height / 2, 'background').setOrigin(0.5, 0.5);
       background.setScrollFactor(0);
-      background.setScale(1.2);
+      
       // BG sound track
       this.bgMusic = this.sound.add('bgmusic');
       this.bgMusic.loop = true;
@@ -130,7 +133,7 @@ const Game = () => {
 
 
       // Create player
-      this.player = this.matter.add.sprite(1040 / 4, 424, 'player', null, {
+      this.player = this.matter.add.sprite(1040 / 4 + 128, 424, 'player', null, {
         friction: 0,        // No friction on surfaces
         frictionStatic: 0,  // No static friction
         frictionAir: 0,     // No air resistance
@@ -144,6 +147,29 @@ const Game = () => {
       // Camera
       this.cameras.main.startFollow(this.player, true, 1, 1);
       this.cameras.main.setFollowOffset(-this.cameras.main.width / 4, 138);
+      
+      // Resize system
+      this.adjustCameraZoom = function(width) {
+        if (width < 1040) {
+          this.cameras.main.setZoom(0.71); // Zoom in for smaller screens
+          console.log('zoom out');
+        } else {
+          this.cameras.main.setZoom(1);   // Normal zoom for larger screens
+          console.log('zoom in');
+        }
+
+        const zoomFactor = this.cameras.main.zoom;
+        background.setDisplaySize(this.scale.width / zoomFactor, this.scale.height / zoomFactor);
+      }.bind(this);
+    
+      // Set initial zoom and background size
+      this.adjustCameraZoom(this.scale.width);
+      
+      // Listen for resize events
+      this.scale.on('resize', (gameSize) => {
+        this.adjustCameraZoom(gameSize.width);
+        background.setDisplaySize(gameSize.width, gameSize.height);
+      }, this);
 
       // Collision detection for enemies
       this.matter.world.on('collisionstart', (event) => {
@@ -182,17 +208,24 @@ const Game = () => {
         }
       });
 
-      // Difficulty timer (unimplemented callback)
+      // Define speed increase function
+      this.increaseSpeed = function() {
+        if (!this.isGameOver) {
+            this.speed += 0.1;
+        }
+      };
+
+      // Add timed event to increase speed every second
       this.time.addEvent({
-        delay: 10000,
-        // callback: increaseDifficulty,
+        delay: 1000,
+        callback: this.increaseSpeed,
         callbackScope: this,
-        loop: true,
+        loop: true
       });
     }
 
     function update() {
-      console.log(this.player.body.velocity.x);
+      console.log('width: ' + this.scale.width);
       // Check if player is on ground
       this.player.isOnGround = false;
       this.matter.world.engine.pairs.list.forEach(pair => {

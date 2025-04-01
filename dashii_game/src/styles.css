@@ -12,6 +12,14 @@ body {
   overflow: hidden;
 }
 
+.loading-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
 /* Main container for the start menu */
 .start-menu-container {
   display: flex;
