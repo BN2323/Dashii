@@ -16,7 +16,7 @@ import Background from './assets/background.jpg';
 import Tiles from './assets/dashii_tilesets.png';
 import Ground from './assets/ground.png';
 //Soundfx
-import Jump from './assets/sound fx/lot.wav';
+import Jump from './assets/sound fx/jump.wav';
 import Die from './assets/sound fx/oy.wav';
 import BGMusic from './assets/sound fx/background.mp3';
 
@@ -202,7 +202,7 @@ const Game = () => {
       });
 
       // Win System
-      console.log(this.player.x);
+      console.log(this.mapWidth);
       if (this.player.x >= this.mapWidth) {
         console.log('win');
         setGameCurState('win');
