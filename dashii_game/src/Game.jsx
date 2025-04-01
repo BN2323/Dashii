@@ -26,8 +26,8 @@ import tileJson from './dashii_map.json';
 // Game props
 import PIcon from './assets/pause_icon.png'
 
-
-
+// Style
+import './gameStyle.css';
 
 
 
@@ -284,7 +284,7 @@ const Game = () => {
   }
 
   return <div id="phaser-game" style={{position: 'relative'}}>
-              <button onClick={handlePaue} style={{ width: '40', height: '40', backgroundSize: 'cover', position: 'absolute', top: '5', left: '5' }}><img src="PIcon" alt="pause_icon" /></button>
+              <button onClick={handlePaue} className='pButton' style={{backgroundImage: {PIcon}}}></button>
               {gameCurState === 'pause' && <GamePause onRestart={handleRestart} onResume={handleResume} display={goDisplayStat} />}
               {gameCurState === 'win' && <GameVictory onRestart={handleRestart} onNextLevel={handleNextLevel} display={goDisplayStat} attemp={attemp} />}
               {gameCurState === 'over' && <GameOver onRestart={handleRestart} display={goDisplayStat} attemp={attemp} />}
